@@ -29,8 +29,7 @@ export class TicketController {
     @UserInfo() user: Customer,
     @Param('id') id: number,
     @Body() reservationDto: ReservationDto,
-  ) {
-    //: Promise<Ticket>
+  ): Promise<Ticket> {
     return await this.ticketService.reservation(user, id, reservationDto);
   }
 
@@ -40,12 +39,12 @@ export class TicketController {
     return await this.ticketService.currentReservation(user);
   }
 
-  // //예약 취소하기
-  // @Delete(':id')
-  // async cancelReservation(
-  //   @UserInfo() user: Customer,
-  //   @Param('id') id: number,
-  // ): Promise<object> {
-  //   return await this.ticketService.cancelReservation(user, id);
-  // }
+  //예약 취소하기
+  @Delete(':id')
+  async cancelReservation(
+    @UserInfo() user: Customer,
+    @Param('id') id: number,
+  ): Promise<object> {
+    return await this.ticketService.cancelReservation(user, id);
+  }
 }
