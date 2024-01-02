@@ -124,27 +124,31 @@ export class TicketService {
 
   //예약 취소하기
   async cancelReservation(user, id): Promise<object> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const findReservation = await this.ticketRepository.findOne({
-        where: { id },
-        // relations: { concert: true},
-      });
-      console.log('findReservation 티켓', findReservation);
+      //취소하려는 티켓 정보 가져오기
+      const findReservation = await queryRunner.manager
+        .getRepository(Ticket)
+        .findOne({
+          where: { id },
+          // relations: { concert: true},
+        });
       //eger or laze relation 으로 join으로 데이터 가져올것인가? _ 그럼 concert단 서비스 로직 수정해야함.
 
       //공연 좌석수 변경하기
-      const findSchedule = await this.scheduleRepository.findOne({
-        where: {
-          concertId: findReservation.concertId,
-          date: findReservation.concertDate,
-        },
-      });
+      const findSchedule = await queryRunner.manager
+        .getRepository(Schedule)
+        .findOne({
+          where: {
+            concertId: findReservation.concertId,
+            date: findReservation.concertDate,
+          },
+        });
       const koreaTime = new Date().getTime() + 60000 * 60 * 9;
       const concertTime = new Date(findSchedule.date).getTime();
       const timeUntilConcert = concertTime - koreaTime;
-      console.log('한국시간', koreaTime);
-      console.log('콘서트 시작시간', concertTime);
-      console.log('시간차', timeUntilConcert, 60000 * 60 * 3);
 
       if (timeUntilConcert <= 60000 * 60 * 3) {
         throw new UnauthorizedException(
@@ -153,27 +157,33 @@ export class TicketService {
       }
       findSchedule.totalSeat =
         findSchedule.totalSeat + findReservation.ticketCount;
-      const updateSchedule = await this.scheduleRepository.save(findSchedule);
-      console.log('updateSchedule 스케줄변경', updateSchedule);
+      const updateSchedule = await queryRunner.manager
+        .getRepository(Schedule)
+        .save(findSchedule);
 
       //현재 포인트에 취소금액 추가하기.
-      const findUserCurrentPoint = await this.pointRepository.find({
-        where: { customerId: user.id },
-        order: { createdAt: 'DESC' },
-      });
-      console.log('findUserCurrentPoint', findUserCurrentPoint[0]);
+      const findUserCurrentPoint = await queryRunner.manager
+        .getRepository(Point)
+        .find({
+          where: { customerId: user.id },
+          order: { createdAt: 'DESC' },
+        });
       const cancelPrice = findReservation.price * findReservation.ticketCount;
-      console.log('취소될 가격', cancelPrice);
-      const updatePointData = await this.pointRepository.save({
-        addPoint: cancelPrice,
-        minusPoint: 0,
-        currentPoint: findUserCurrentPoint[0].currentPoint + cancelPrice,
-        customerId: user.id,
-      });
-      console.log('updatePointData 총포인트 돌려놓기', updatePointData);
+      const updatePointData = await queryRunner.manager
+        .getRepository(Point)
+        .save({
+          addPoint: cancelPrice,
+          minusPoint: 0,
+          currentPoint: findUserCurrentPoint[0].currentPoint + cancelPrice,
+          customerId: user.id,
+        });
 
       //티켓 테이블에서 데이터 삭제하기
-      const deleteTicket = await this.ticketRepository.delete({ id });
+      const deleteTicket = await queryRunner.manager
+        .getRepository(Ticket)
+        .delete({ id });
+      await queryRunner.commitTransaction();
+
       if (updateSchedule && updatePointData && deleteTicket) {
         return { message: '예약이 취소되었습니다.' };
       } else {
@@ -182,6 +192,9 @@ export class TicketService {
       //트렌젝션 처리하기.
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
   }
 }
