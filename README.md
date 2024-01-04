@@ -15,6 +15,10 @@ ADMIN_SECRET_KEY =</br>
 
 ![image](https://github.com/eunji624/concert_ticket_reservation/assets/130081021/287b3602-59a6-442e-9573-b2665a6d880f)
 
+## API 명세
+
+https://www.notion.so/1e0bf00468794339bb745741092ebadf?v=55a52c82ab4843bd8e000b06a0ebf62e&pvs=4
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
