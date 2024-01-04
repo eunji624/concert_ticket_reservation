@@ -11,7 +11,7 @@ JWT_SECRET_KEY=</br>
 ADMIN_SECRET_KEY =</br>
 </br></br>
 
-### ERD
+## ERD
 
 ![image](https://github.com/eunji624/concert_ticket_reservation/assets/130081021/287b3602-59a6-442e-9573-b2665a6d880f)
 
