@@ -4,14 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TicketStatus } from '../types/ticketStatus.type';
 import { Customer } from 'src/user/entities/customer.entity';
 import { Concert } from 'src/concert/entities/concert.entities';
-import { Point } from './point.entities';
 
 @Entity()
 export class Ticket {
@@ -39,7 +37,6 @@ export class Ticket {
   @Column({ type: 'int', nullable: false })
   ticketCount: number;
 
-  // TODO userTickets테이블과 1: N 설정.
   @ManyToOne(() => Customer, (customer) => customer.ticket, {
     onDelete: 'CASCADE',
   })
@@ -61,8 +58,4 @@ export class Ticket {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  //콘서트 아이디 값은 유저가 티켓을 예매해서 데이터를 넣을때 콘서트 아이디 값, 날짜 집어넣기.
-  // @Column({ type: 'int', nullable: false })
-  // concertId: number;
 }

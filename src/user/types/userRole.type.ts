@@ -3,8 +3,3 @@ export enum Role {
   CUSTOMER = 'CUSTOMER',
   ADMIN = 'ADMIN',
 }
-// export enum Role {
-//   PERFORMER,
-//   CUSTOMER,
-//   ADMIN,
-// }

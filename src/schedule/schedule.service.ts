@@ -17,9 +17,6 @@ export class ScheduleService {
     performanceDate: string[],
     saveConcert: Concert,
   ): Promise<Schedule[]> {
-    // const queryRunner = this.dataSource.createQueryRunner();
-    // await queryRunner.connect();
-    // await queryRunner.startTransaction();
     try {
       const createScheduleArr = [];
       for (let eachDate of performanceDate) {
@@ -27,27 +24,13 @@ export class ScheduleService {
           date: eachDate,
           concert: saveConcert,
         });
-        // 락처리 .. 왜 ㅠㅠ
-        // const createSchedule = await this.dataSource
-        //   .getRepository(Schedule)
-        //   .createQueryBuilder('schedule')
-        //   .setLock('pessimistic_write')
-        //   .insert()
-        //   .into(Schedule)
-        //   .values({ date: eachDate, concert: saveConcert })
-        //   .execute();
         createScheduleArr.push(saveCreatedSchedule);
       }
 
-      // await queryRunner.commitTransaction();
       return createScheduleArr;
-      // return createScheduleArr as Schedule[];
-      // return createSchedule.generatedMaps[0] as Schedule;
     } catch (err) {
       console.log(err);
-      // await queryRunner.rollbackTransaction();
     } finally {
-      // await queryRunner.release();
     }
   }
 

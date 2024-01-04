@@ -1,12 +1,4 @@
-import {
-  IsBoolean,
-  IsDate,
-  IsEmail,
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  Validate,
-} from 'class-validator';
+import { IsDate, IsNotEmpty } from 'class-validator';
 
 export class ScheduleDto {
   @IsNotEmpty()

@@ -2,13 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-// import { User } from './user.entity';
 import { Role } from '../types/userRole.type';
 import { Ticket } from 'src/ticket/entities/ticket.entities';
 import { Point } from 'src/ticket/entities/point.entities';
@@ -34,16 +31,10 @@ export class Customer {
   birth: Date;
 
   @OneToMany(() => Ticket, (ticket) => ticket.customer, { cascade: true })
-  // @JoinColumn()
   ticket: Ticket[];
-  // @Column({ type: 'int' })
-  // ticketId: number;
 
   @OneToMany(() => Point, (point) => point.customer, { cascade: true })
-  // @JoinColumn()
   point: Point[];
-  // @Column({ type: 'int' })
-  // pointId: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,14 +1,12 @@
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Role } from '../types/userRole.type';
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CustomerRegisterDto {
   @IsNotEmpty({ message: '이메일을 입력해주세요.' })

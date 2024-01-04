@@ -11,7 +11,6 @@ import { TicketService } from './ticket.service';
 import { Ticket } from './entities/ticket.entities';
 import { ReservationDto } from './dto/reservation.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/user/types/userRole.type';
 import { Customer } from 'src/user/entities/customer.entity';

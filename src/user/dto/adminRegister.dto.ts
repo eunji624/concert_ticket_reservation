@@ -1,13 +1,11 @@
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Role } from '../types/userRole.type';
 
 export class AdminRegisterDto {
   @IsNotEmpty({ message: '이메일을 입력해주세요.' })

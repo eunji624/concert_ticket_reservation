@@ -5,32 +5,21 @@ import {
   Logger,
   Param,
   Post,
-  UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserInfo } from 'src/utils/userInfo.decorator';
 
 import { CustomerRegisterDto } from './dto/customerRegister.dto';
 import { PerformerRegisterDto } from './dto/performerRegister.dto';
 import { CustomerLogInDto } from './dto/customerLogIn.dto';
 import { PerformerLogInDto } from './dto/performerLogin.dto';
-import { Customer } from './entities/customer.entity';
-import { Performer } from './entities/performer.entity';
 
-// import { User } from './entities/user.entity';
 import { Roles } from 'src/auth/roles.decorator';
-import { RolesGuard } from 'src/auth/roles.guard';
 import { Role } from './types/userRole.type';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminRegisterDto } from './dto/adminRegister.dto';
 import { AdminLoginDto } from './dto/adminLogin.dto';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('User')
 @Controller('user')

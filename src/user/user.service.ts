@@ -10,18 +10,10 @@ import { Role } from './types/userRole.type';
 import { compare, hash } from 'bcrypt';
 import _ from 'lodash';
 
-// import { User } from './entities/user.entity';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
-
-// import { CustomerRegisterDto } from './dto/customerRegister.dto';
-// import { PerformerRegisterDto } from './dto/performerRegister.dto';
-// import { CustomerLogInDto } from './dto/customerLogIn.dto';
-// import { PerformerLogInDto } from './dto/performerLogin.dto';
 import { Admin } from './entities/admin.entity';
 import { Customer } from './entities/customer.entity';
 import { Performer } from './entities/performer.entity';
 import { ConfigService } from '@nestjs/config';
-import { AdminRegisterDto } from './dto/adminRegister.dto';
 import { Point } from 'src/ticket/entities/point.entities';
 
 @Injectable()
@@ -37,8 +29,6 @@ export class UserService {
     private customerRepository: Repository<Customer>,
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
-    @InjectRepository(Point)
-    private pointRepository: Repository<Point>,
   ) {}
 
   //Customer 회원가입

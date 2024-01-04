@@ -3,12 +3,10 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TicketStatus } from '../types/ticketStatus.type';
 import { Customer } from 'src/user/entities/customer.entity';
 
 @Entity()

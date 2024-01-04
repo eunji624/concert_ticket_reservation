@@ -18,16 +18,9 @@ import { SeatStatus } from 'src/seat/types/seat.status';
 @Injectable()
 export class TicketService {
   constructor(
-    private readonly jwtService: JwtService,
     private dataSource: DataSource,
     @InjectRepository(Ticket)
     private ticketRepository: Repository<Ticket>,
-    @InjectRepository(Concert)
-    private concertRepository: Repository<Concert>,
-    @InjectRepository(Schedule)
-    private scheduleRepository: Repository<Schedule>,
-    @InjectRepository(Point)
-    private pointRepository: Repository<Point>,
     @InjectRepository(Seat)
     private seatRepository: Repository<Seat>,
   ) {}

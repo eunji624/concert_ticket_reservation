@@ -1,12 +1,6 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Concert } from '../concert/entities/concert.entities';
 import { DataSource, Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { Seat } from './entities/seat.entities';
 import { SeatStatus } from './types/seat.status';
@@ -15,13 +9,8 @@ import { PriceByGrade } from './types/priceByGrade.type';
 @Injectable()
 export class SeatService {
   constructor(
-    @InjectRepository(Concert)
-    private concertRepository: Repository<Concert>,
-    @InjectRepository(Schedule)
-    private scheduleRepository: Repository<Schedule>,
     @InjectRepository(Seat)
     private seatRepository: Repository<Seat>,
-    private readonly jwtService: JwtService,
     private dataSource: DataSource,
   ) {}
 

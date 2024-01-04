@@ -3,20 +3,15 @@ import {
   ConflictException,
   Inject,
   Injectable,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Concert } from './entities/concert.entities';
-import { DataSource, Like, Repository, getManager } from 'typeorm';
+import { DataSource, Like, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConcertDto } from './dto/concert.dto';
-import { Admin } from 'src/user/entities/admin.entity';
-import { Performer } from 'src/user/entities/performer.entity';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { Seat } from 'src/seat/entities/seat.entities';
-import { SeatStatus } from 'src/seat/types/seat.status';
-import { find } from 'lodash';
 import { ScheduleService } from 'src/schedule/schedule.service';
 import { SeatService } from 'src/seat/seat.service';
 import { ConcertDetailInfo } from './types/concertDetail.type';
@@ -26,20 +21,14 @@ export class ConcertService {
   constructor(
     @InjectRepository(Concert)
     private concertRepository: Repository<Concert>,
-    @InjectRepository(Schedule)
-    private scheduleRepository: Repository<Schedule>,
-    @InjectRepository(Seat)
-    private seatRepository: Repository<Seat>,
     @Inject(ScheduleService)
     private readonly scheduleService: ScheduleService,
     private readonly seatService: SeatService,
-    private readonly jwtService: JwtService,
     private dataSource: DataSource,
   ) {}
 
   //공연 리스트 보기
   async allConcertList(): Promise<object> {
-    //타입의 일부만 리턴해도 문제 없을까?
     const findConcertList = await this.concertRepository.find({
       where: { confirm: true },
       select: {

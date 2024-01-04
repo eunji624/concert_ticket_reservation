@@ -28,7 +28,6 @@ import { ConcertDetailInfo } from './types/concertDetail.type';
 @UseGuards(RolesGuard)
 @Controller('concert')
 export class ConcertController {
-  private logger = new Logger(); //로그 찍기, boardsController아니여도 됨.
   constructor(private readonly concertService: ConcertService) {}
 
   //공연 리스트 보기 __ 롤가드 순서 중요.(아래에 있으면 위에 롤즈가 적용)
@@ -39,11 +38,9 @@ export class ConcertController {
 
   //공연 검색하기 __ 순서 중요. 상세보기 아래 있었더니 id 값을 읽어서 에러남.
   @Get('search')
-  // async searchConcert(@Body() query: string) {
   async searchConcert(@Query('query') query: string): Promise<Concert[]> {
     console.log('query', query);
     return await this.concertService.searchConcert(query);
-    //: Promise<Concert[]>
   }
 
   //공연 상세 보기

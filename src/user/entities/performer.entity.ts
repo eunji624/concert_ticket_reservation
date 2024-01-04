@@ -2,12 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-// import { User } from './user.entity';
 import { Role } from '../types/userRole.type';
 
 @Entity()
@@ -44,8 +41,4 @@ export class Performer {
 
   @UpdateDateColumn()
   updated_At: Date;
-
-  // @OneToOne(() => User)
-  // @JoinColumn({ name: 'user_id' })
-  // user: User;
 }

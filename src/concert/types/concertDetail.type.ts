@@ -7,7 +7,4 @@ export type ConcertDetailInfo = {
   concertDescription: string;
   reservationStart: string;
   concertHallName: string;
-  // seatType: SeatType;
-  // price: number;
-  // date: string[];
 };
