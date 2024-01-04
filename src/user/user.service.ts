@@ -146,12 +146,10 @@ export class UserService {
     if (password !== passwordRe) {
       throw new ConflictException('비밀번호가 일치하지 않습니다.');
     }
-    console.log('adminRegisterDto', adminRegisterDto);
     try {
       const existingUser = await this.adminRepository.findOne({
         where: { email },
       });
-      console.log('existingUser', existingUser);
       if (existingUser) {
         throw new ConflictException('이미 존재하는 계정입니다.');
       }

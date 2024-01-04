@@ -39,10 +39,12 @@ export class TicketController {
     return await this.ticketService.currentReservation(user);
   }
 
-  //예약 취소하기 __ 수정중입니다
+  //예약 취소하기
   @Delete(':id')
-  async cancelReservation(@UserInfo() user: Customer, @Param('id') id: number) {
-    //: Promise<object>
+  async cancelReservation(
+    @UserInfo() user: Customer,
+    @Param('id') id: number,
+  ): Promise<object> {
     return await this.ticketService.cancelReservation(user, id);
   }
 }

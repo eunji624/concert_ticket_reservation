@@ -56,7 +56,6 @@ export class ConcertService {
     const searchResult = await this.concertRepository.find({
       where: { concertName: Like(`%${query}%`), confirm: true },
     });
-    console.log('searchResult', searchResult);
     return searchResult;
   }
 
@@ -66,7 +65,6 @@ export class ConcertService {
       where: { confirm: true, id },
       select: { schedule: true },
     });
-    console.log('concertDetail', concertDetail);
     if (!concertDetail) {
       throw new NotFoundException('존재하지 않는 공연입니다.');
     }
@@ -124,7 +122,6 @@ export class ConcertService {
           reservationStart,
           concertHallName,
         });
-      console.log('saveConcert', saveConcert);
 
       let seatsToInsert = [];
       //스케줄 테이블 데이터 넣기.
@@ -135,16 +132,12 @@ export class ConcertService {
 
       //scheduleData 결과를 기반으로 시트 테이블 데이터 넣기
       Promise.all(scheduleData).then(async (schedule) => {
-        console.log(schedule);
-        // throw new Error('테스트');
         const createSeat = await this.seatService.createSeat(
           schedule,
           saveConcert.id,
           priceByGrade,
         );
-        console.log('createSeat', createSeat);
       });
-      // .catch(async (err) => await queryRunner.rollbackTransaction());
 
       await queryRunner.commitTransaction();
       if (seatsToInsert.length && saveConcert) {
@@ -206,7 +199,6 @@ export class ConcertService {
           '해당하는 공연 게시글이 존재하지 않습니다.',
         );
       }
-      console.log('findSeatData', findSeatData);
       const oldSeatTypeArr = findSeatData.map((eachSeat) => eachSeat.seatType);
       const setOldSeatTypeArr = [...new Set(oldSeatTypeArr)].sort();
 
@@ -220,7 +212,6 @@ export class ConcertService {
       );
 
       if (findSeatData.length / findScheduleData.length !== newSeatCount) {
-        console.log('여기서 문제==> ', 1);
         throw new BadRequestException(
           '시트의 타입과 좌석수는 바꿀 수 없습니다.',
         );
@@ -228,8 +219,6 @@ export class ConcertService {
 
       for (let i = 0; i < setOldSeatTypeArr.length; i++) {
         if (setOldSeatTypeArr[i] !== newSeatTypeArr[i]) {
-          console.log('여기서 문제==> ', 2);
-
           throw new BadRequestException(
             '시트의 타입과 좌석수는 바꿀 수 없습니다.',
           );
@@ -249,15 +238,6 @@ export class ConcertService {
       const updateConcert = await queryRunner.manager
         .getRepository(Concert)
         .save(isExistConcert);
-      console.log('updateConcert', updateConcert);
-
-      //시트 데이터 수정하기 전에 등급별 가격 미리 빼두기
-      let grade = [];
-      for (let eachPriceByGrade of priceByGrade) {
-        grade.push(eachPriceByGrade.grade);
-        grade.push(eachPriceByGrade.price);
-      }
-      console.log('grade', grade); //[ 'VIP', 50000, 'S', 45000, 'A', 25000 ]
 
       //date 변경된 경우의 수
       const findOldDate = findScheduleData.map((e) => e.date).sort();
@@ -277,9 +257,6 @@ export class ConcertService {
         const sameD = findOldDate.find((oldDate) => newDate === oldDate);
         if (!sameD) createDate.push(newDate);
       }
-      console.log('sameDate', sameDate);
-      console.log('createDate', createDate);
-      console.log('cancelDate', cancelDate);
 
       //분류한 대로 데이터 처리하기
 
@@ -288,16 +265,12 @@ export class ConcertService {
         createDate,
         updateConcert,
       );
-      console.log('addScheduleArr', addScheduleArr);
       Promise.all(addScheduleArr).then(async (schedule) => {
-        console.log('프로미스안 schedule', schedule);
-
         const createSeat = await this.seatService.createSeat(
           schedule,
           id,
           priceByGrade,
         );
-        console.log('createSeat', createSeat);
       });
 
       //날짜가 삭제된 경우(스케줄, 시트)
@@ -305,22 +278,17 @@ export class ConcertService {
         cancelDate,
         id,
       );
-      console.log('deleteScheduleArr', deleteScheduleArr);
       const deleteSeat = await this.seatService.deleteSeat(deleteScheduleArr);
-      console.log('deleteSeat', deleteSeat);
 
       //날짜가 같은 경우(스케줄, 시트)__ 만약 시간이 다른 경우라면? 추가 삭제로 예상중
-      console.log('_+_');
       const sameScheduleArr =
         await this.scheduleService.findScheduleGetScheduleId(sameDate, id);
-      console.log('sameScheduleArr', sameScheduleArr);
       //시트는 가격만 변경 가능
       const modifySeat = await this.seatService.updateSeat(
         id,
         sameScheduleArr,
         priceByGrade,
       );
-      console.log('modifySeat', modifySeat);
 
       await queryRunner.commitTransaction();
       if (updateConcert) {

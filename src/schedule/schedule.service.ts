@@ -8,12 +8,8 @@ import { Seat } from 'src/seat/entities/seat.entities';
 @Injectable()
 export class ScheduleService {
   constructor(
-    // @InjectRepository(Concert)
-    // private concertRepository: Repository<Concert>,
     @InjectRepository(Schedule)
     private scheduleRepository: Repository<Schedule>,
-    // @InjectRepository(Seat)
-    // private seatRepository: Repository<Seat>,
     private dataSource: DataSource,
   ) {}
 
@@ -21,7 +17,6 @@ export class ScheduleService {
     performanceDate: string[],
     saveConcert: Concert,
   ): Promise<Schedule[]> {
-    console.log('서비스로 넘어왔어요~~~~~~~~~~~');
     // const queryRunner = this.dataSource.createQueryRunner();
     // await queryRunner.connect();
     // await queryRunner.startTransaction();
@@ -84,33 +79,15 @@ export class ScheduleService {
         cancelDate,
         concertId,
       );
-      console.log('findScheduleByDelete', findScheduleByDelete);
-
       for (let cancel of cancelDate) {
-        console.log('cancel', cancel);
-
         const deleteSchedule = await this.scheduleRepository.delete({
           date: cancel,
           concertId,
         });
-        console.log('deleteSchedule', deleteSchedule);
       }
       return findScheduleByDelete;
     } catch (err) {
       console.log(err);
     }
   }
-
-  // async modifySchedule(modifyDateArr, concertId, priceByGrade) {
-  //   try{
-  //     for(let modifyDate of modifyDateArr){
-  //       const findScheduleByModify = await this.findScheduleGetScheduleId(
-  //         modifyDate,
-  //         concertId,
-  //       );
-  //     }
-  //   }catch(err){
-  //     console.log(err)
-  //   }
-  // }
 }
