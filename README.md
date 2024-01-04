@@ -1,14 +1,15 @@
 ## ENV
 
-DB_HOST=
-DB_PORT=
-DB_USERNAME=
-DB_PASSWORD=
-DB_NAME=
-DB_SYNC=
-JWT_SECRET_KEY=
-ADMIN_SECRET_KEY =
-
+</br>
+DB_HOST= </br>
+DB_PORT=</br>
+DB_USERNAME=</br>
+DB_PASSWORD=</br>
+DB_NAME=</br>
+DB_SYNC=</br>
+JWT_SECRET_KEY=</br>
+ADMIN_SECRET_KEY =</br>
+</br></br>
 ---
 
 <p align="center">
