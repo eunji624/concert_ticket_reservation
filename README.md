@@ -1,3 +1,16 @@
+## ENV
+
+DB_HOST=
+DB_PORT=
+DB_USERNAME=
+DB_PASSWORD=
+DB_NAME=
+DB_SYNC=
+JWT_SECRET_KEY=
+ADMIN_SECRET_KEY =
+
+---
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
