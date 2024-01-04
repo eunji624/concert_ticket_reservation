@@ -33,8 +33,7 @@ export class TicketService {
   ) {}
 
   //티켓 예매하기
-  async reservation(user, id, reservationDto) {
-    //: Promise<Ticket>
+  async reservation(user, id, reservationDto): Promise<Ticket> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -83,7 +82,7 @@ export class TicketService {
         concertId: id,
         customerId: user.id,
         ticketCount: count,
-        seatNum: seatNumber,
+        seatNum: seatGrade,
       };
       console.log('saveReservation', saveReservation);
       const newReservation = await queryRunner.manager
@@ -155,79 +154,89 @@ export class TicketService {
     }
   }
 
-  // //예약 취소하기__ 수정중입니다.
-  // async cancelReservation(user, id): Promise<object> {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.connect();
-  //   await queryRunner.startTransaction();
-  //   try {
-  //     //취소하려는 티켓 정보 가져오기
-  //     const findReservation = await queryRunner.manager
-  //       .getRepository(Ticket)
-  //       .findOne({
-  //         where: { id },
-  //         // relations: { concert: true},
-  //       });
-  //     //eger or laze relation 으로 join으로 데이터 가져올것인가? _ 그럼 concert단 서비스 로직 수정해야함.
+  //예약 취소하기__ 수정중입니다.
+  async cancelReservation(user, id) {
+    //: Promise<object>
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      //취소하려는 티켓 정보 가져오기
+      const findReservation = await queryRunner.manager
+        .getRepository(Ticket)
+        .findOne({
+          where: { id },
+          relations: { concert: true },
+        });
+      console.log('findReservation', findReservation);
 
-  //     //공연 좌석수 변경하기
-  //     const findSchedule = await queryRunner.manager
-  //       .getRepository(Schedule)
-  //       .findOne({
-  //         where: {
-  //           concertId: findReservation.concertId,
-  //           date: findReservation.concertDate,
-  //         },
-  //       });
-  //     const koreaTime = new Date().getTime() + 60000 * 60 * 9;
-  //     const concertTime = new Date(findSchedule.date).getTime();
-  //     const timeUntilConcert = concertTime - koreaTime;
+      //공연 좌석수 변경하기
+      const findSchedule = await queryRunner.manager
+        .getRepository(Schedule)
+        .findOne({
+          relations: { seat: true },
+          where: {
+            concertId: findReservation.concertId,
+            date: findReservation.concertDate,
+          },
+        });
+      console.log('findSchedule', findSchedule);
+      const findSeat = findSchedule.seat.find((data) => {
+        console.log(data.seatType);
 
-  //     if (timeUntilConcert <= 60000 * 60 * 3) {
-  //       throw new UnauthorizedException(
-  //         '예매 취소는 3시간 전 까지만 가능합니다.',
-  //       );
-  //     }
-  //     findSchedule.totalSeat =
-  //       findSchedule.totalSeat + findReservation.ticketCount;
-  //     const updateSchedule = await queryRunner.manager
-  //       .getRepository(Schedule)
-  //       .save(findSchedule);
+        console.log(findReservation.seatNum);
+        return data.seatNum === findReservation.seatNum;
+      });
+      console.log('findSeat', findSeat);
 
-  //     //현재 포인트에 취소금액 추가하기.
-  //     const findUserCurrentPoint = await queryRunner.manager
-  //       .getRepository(Point)
-  //       .find({
-  //         where: { customerId: user.id },
-  //         order: { createdAt: 'DESC' },
-  //       });
-  //     const cancelPrice = findReservation.price * findReservation.ticketCount;
-  //     const updatePointData = await queryRunner.manager
-  //       .getRepository(Point)
-  //       .save({
-  //         addPoint: cancelPrice,
-  //         minusPoint: 0,
-  //         currentPoint: findUserCurrentPoint[0].currentPoint + cancelPrice,
-  //         customerId: user.id,
-  //       });
+      const koreaTime = new Date().getTime() + 60000 * 60 * 9;
+      const concertTime = new Date(findSchedule.date).getTime();
+      const timeUntilConcert = concertTime - koreaTime;
 
-  //     //티켓 테이블에서 데이터 삭제하기
-  //     const deleteTicket = await queryRunner.manager
-  //       .getRepository(Ticket)
-  //       .delete({ id });
-  //     await queryRunner.commitTransaction();
+      if (timeUntilConcert <= 60000 * 60 * 3) {
+        throw new UnauthorizedException(
+          '예매 취소는 3시간 전 까지만 가능합니다.',
+        );
+      }
+      findSeat.status = SeatStatus.AVAILABLE;
+      const updateSeat = await this.seatRepository.save(findSeat);
+      console.log('updateSeat', updateSeat);
 
-  //     if (updateSchedule && updatePointData && deleteTicket) {
-  //       return { message: '예약이 취소되었습니다.' };
-  //     } else {
-  //       return { message: '잠시 후 다시 시도해 주세요.' };
-  //     }
-  //     //트렌젝션 처리하기.
-  //   } catch (err) {
-  //     console.log(err);
-  //     await queryRunner.rollbackTransaction();
-  //   } finally {
-  //     await queryRunner.release();
-  //   }
-  // }
+      //현재 포인트에 취소금액 추가하기.
+      const findUserCurrentPoint = await queryRunner.manager
+        .getRepository(Point)
+        .find({
+          where: { customerId: user.id },
+          order: { createdAt: 'DESC' },
+        });
+      const cancelPrice = findReservation.price * findReservation.ticketCount;
+      const updatePointData = await queryRunner.manager
+        .getRepository(Point)
+        .save({
+          addPoint: cancelPrice,
+          minusPoint: 0,
+          currentPoint: findUserCurrentPoint[0].currentPoint + cancelPrice,
+          customerId: user.id,
+        });
+      console.log('updatePointData', updatePointData);
+
+      //티켓 테이블에서 데이터 삭제하기
+      const deleteTicket = await queryRunner.manager
+        .getRepository(Ticket)
+        .delete({ id });
+      await queryRunner.commitTransaction();
+
+      if (updateSeat && updatePointData && deleteTicket) {
+        return { message: '예약이 취소되었습니다.' };
+      } else {
+        return { message: '잠시 후 다시 시도해 주세요.' };
+      }
+      //트렌젝션 처리하기.
+    } catch (err) {
+      console.log(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }

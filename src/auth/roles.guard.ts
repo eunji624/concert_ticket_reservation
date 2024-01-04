@@ -20,7 +20,6 @@ export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
     if (!authenticated) {
       return false;
     }
-    console.log('canActivate 가동중');
     //핸들러에 걸려있는 권한 체크
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>('roles', [
       context.getHandler(), //req, res객체 읽음.

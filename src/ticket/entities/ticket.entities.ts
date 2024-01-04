@@ -27,14 +27,11 @@ export class Ticket {
   @Column({ type: 'varchar', nullable: false })
   concertHallName: string;
 
-  @Column({ type: 'int', nullable: false })
-  seatNum: number;
+  @Column({ type: 'varchar', nullable: false })
+  seatNum: string;
 
   @Column({ type: 'int', nullable: false })
   price: number;
-
-  @Column({ type: 'int', nullable: false })
-  count: number;
 
   @Column({ type: 'varchar', nullable: false })
   concertDate: string;
