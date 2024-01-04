@@ -34,7 +34,6 @@ export class TicketService {
     try {
       const { count, concertDate, seatGrade } = reservationDto;
       const [grade, seatNumber] = seatGrade.split('-');
-      const newDate = concertDate.substr(0, 10);
 
       //티켓 테이블에 데이터 넣기
       const findConcertScheduleSeatInfo = await queryRunner.manager

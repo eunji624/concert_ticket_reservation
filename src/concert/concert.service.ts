@@ -47,12 +47,11 @@ export class ConcertService {
     });
     return searchResult;
   }
-
   //공연 상세 보기
   async concertDetail(id: number): Promise<ConcertDetailInfo> {
     const concertDetail = await this.concertRepository.findOne({
-      where: { confirm: true, id },
-      select: { schedule: true },
+      where: { confirm: true, id: id },
+      relations: { schedule: true },
     });
     if (!concertDetail) {
       throw new NotFoundException('존재하지 않는 공연입니다.');

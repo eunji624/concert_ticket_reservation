@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   Param,
   Patch,
   Post,
@@ -17,11 +16,8 @@ import { Role } from 'src/user/types/userRole.type';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 import { ConcertDto } from './dto/concert.dto';
-import { PerformerRegisterDto } from 'src/user/dto/performerRegister.dto';
-import { CustomerRegisterDto } from 'src/user/dto/customerRegister.dto';
 import { Performer } from 'src/user/entities/performer.entity';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { Admin } from 'src/user/entities/admin.entity';
 import { Concert } from './entities/concert.entities';
 import { ConcertDetailInfo } from './types/concertDetail.type';
 
@@ -73,9 +69,8 @@ export class ConcertController {
   @Put(':id')
   async modifyConcert(
     @Param('id') id: number,
-    @Body() modifyData: ConcertDto, //유저가 어떤걸 수정할지 모르니 ConcertDto로 하고, Put메소드 사용.
+    @Body() modifyData: ConcertDto,
   ): Promise<Concert> {
-    //
     return await this.concertService.modifyConcert(id, modifyData);
   }
 
