@@ -60,6 +60,7 @@ export class UserService {
           name,
           birth,
           password: hashedPassword,
+          role: Role.CUSTOMER,
         });
       const newCustomerPoint = await queryRunner.manager
         .getRepository(Point)
@@ -117,6 +118,7 @@ export class UserService {
         contact_person,
         contact_company,
         password: hashedPassword,
+        role: Role.PERFORMER,
       });
       return performerRegister;
     } catch (err) {
@@ -233,19 +235,60 @@ export class UserService {
   }
 
   //내정보 조회(일반유저)
-  async customerInfo(id: number): Promise<object> {
+  async customerInfo(user: Customer): Promise<object> {
+    const { id } = user;
     const customerInfo = await this.customerRepository.findOne({
       where: { id },
+      relations: {
+        point: true,
+      },
     });
-    return customerInfo;
+    console.log('customerInfo', customerInfo);
+    const sortPoint = customerInfo.point.sort((a, b) => b.id - a.id);
+    console.log('sortPoint', sortPoint);
+
+    const customerInfoData = {
+      role: customerInfo.role,
+      email: customerInfo.email,
+      name: customerInfo.name,
+      birth: customerInfo.birth,
+      point: sortPoint[0].currentPoint,
+    };
+    console.log('customerInfoData', customerInfoData);
+
+    return customerInfoData;
   }
 
   //내정보 조회(공연관계자)
-  async performerInfo(id: number): Promise<object> {
+  async performerInfo(user: Performer): Promise<object> {
+    const { id } = user;
     const performerInfo = await this.performerRepository.findOne({
       where: { id },
     });
-    return performerInfo;
+
+    console.log('performerInfo', performerInfo);
+
+    const {
+      role,
+      email,
+      production,
+      position,
+      name,
+      contact_person,
+      contact_company,
+    } = performerInfo;
+    const performerInfoData = {
+      role,
+      email,
+      production,
+      position,
+      name,
+      contact_person,
+      contact_company,
+    };
+    console.log('performerInfoData', performerInfoData);
+
+    return performerInfoData;
   }
 
   //jwt에서 사용자 인증용 함수.

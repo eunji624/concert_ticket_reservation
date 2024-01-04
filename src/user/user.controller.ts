@@ -20,6 +20,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { AdminRegisterDto } from './dto/adminRegister.dto';
 import { AdminLoginDto } from './dto/adminLogin.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserInfo } from 'src/utils/userInfo.decorator';
+import { Customer } from './entities/customer.entity';
+import { Performer } from './entities/performer.entity';
 
 @ApiTags('User')
 @Controller('user')
@@ -110,17 +113,17 @@ export class UserController {
   @ApiBearerAuth() //swagger에 token이 있는지 없는지 확인.
   @UseGuards(AuthGuard('jwt'))
   @Roles(Role.CUSTOMER)
-  @Get('customer/:id')
-  async customerInfo(@Param('id') id: number): Promise<object> {
-    return await this.userService.customerInfo(id);
+  @Get('customer')
+  async customerInfo(@UserInfo() user: Customer): Promise<object> {
+    return await this.userService.customerInfo(user);
   }
 
   //내정보 조회(공연관계자)
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Roles(Role.PERFORMER)
-  @Get('performer/:id')
-  async performerInfo(@Param('id') id: number): Promise<object> {
-    return await this.userService.performerInfo(id);
+  @Get('performer')
+  async performerInfo(@UserInfo() user: Performer): Promise<object> {
+    return await this.userService.performerInfo(user);
   }
 }
