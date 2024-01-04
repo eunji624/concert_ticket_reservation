@@ -25,7 +25,14 @@ import { Role } from './types/userRole.type';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminRegisterDto } from './dto/adminRegister.dto';
 import { AdminLoginDto } from './dto/adminLogin.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   private logger = new Logger('UserController');
@@ -33,6 +40,11 @@ export class UserController {
 
   //일반회원 가입
   //TODO 이미 회원가입이 된 회원이 또 회원가입을 같은 권한으로 하려 한다면 막기
+  @ApiOperation({
+    summary: '일반고객 회원가입',
+    description: '회원가입을 하는 란입니다. ',
+  })
+  // @ApiParam(name:'name')
   @Post('register/customer')
   async customerRegister(
     @Body() customerRegisterDto: CustomerRegisterDto,
@@ -106,14 +118,18 @@ export class UserController {
   }
 
   //내정보 조회(일반유저)
+  @ApiBearerAuth() //swagger에 token이 있는지 없는지 확인.
   @UseGuards(AuthGuard('jwt'))
+  @Roles(Role.CUSTOMER)
   @Get('customer/:id')
   async customerInfo(@Param('id') id: number): Promise<object> {
     return await this.userService.customerInfo(id);
   }
 
   //내정보 조회(공연관계자)
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
+  @Roles(Role.PERFORMER)
   @Get('performer/:id')
   async performerInfo(@Param('id') id: number): Promise<object> {
     return await this.userService.performerInfo(id);

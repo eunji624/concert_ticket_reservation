@@ -8,4 +8,8 @@ export class ReservationDto {
   @IsNotEmpty()
   @IsString()
   concertDate: string;
+
+  @IsNotEmpty()
+  @IsString()
+  seatGrade: string;
 }

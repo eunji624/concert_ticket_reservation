@@ -1,4 +1,4 @@
-export enum Seat {
-  STANDING = 'STANDING',
-  SEAT = 'SEAT'
-}
+// export enum Seat {
+//   STANDING = 'STANDING',
+//   SEAT = 'SEAT'
+// }

@@ -8,6 +8,7 @@ import { Point } from './entities/point.entities';
 import { Ticket } from './entities/ticket.entities';
 import { Concert } from 'src/concert/entities/concert.entities';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { Seat } from 'src/seat/entities/seat.entities';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { Schedule } from 'src/schedule/entities/schedule.entity';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Ticket, Point, Concert, Schedule]),
+    TypeOrmModule.forFeature([Ticket, Point, Concert, Schedule, Seat]),
   ],
   controllers: [TicketController],
   providers: [TicketService],

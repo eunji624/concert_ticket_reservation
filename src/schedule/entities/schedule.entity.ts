@@ -1,5 +1,5 @@
 import { Concert } from 'src/concert/entities/concert.entities';
-import { SeatGrade } from 'src/seat/entities/seatGrade.entities';
+import { Seat } from 'src/seat/entities/seat.entities';
 import {
   Column,
   CreateDateColumn,
@@ -19,15 +19,6 @@ export class Schedule {
   @Column({ type: 'varchar', nullable: false })
   date: string;
 
-  @Column({ type: 'int', nullable: false })
-  totalSeat: number;
-
-  @OneToMany(() => SeatGrade, (seatGrade) => seatGrade.schedule)
-  @JoinColumn()
-  seatGrade: SeatGrade[];
-  @Column({ type: 'int', nullable: true })
-  seatGradeId: number;
-
   @ManyToOne(() => Concert, (concert) => concert.schedule, {
     onDelete: 'CASCADE',
   })
@@ -35,6 +26,20 @@ export class Schedule {
   concert: Concert;
   @Column({ type: 'int' })
   concertId: number;
+
+  @OneToMany(() => Seat, (seat) => seat.schedule, { cascade: true })
+  seat: Seat[];
+
+  // //seat테이블 다시 만들면서 빠짐
+  // @Column({ type: 'int', nullable: false })
+  // totalSeat: number;
+
+  // //  seat테이블 다시 만들면서 빠짐
+  // @OneToMany(() => SeatGrade, (seatGrade) => seatGrade.schedule)
+  // @JoinColumn()
+  // seatGrade: SeatGrade[];
+  // @Column({ type: 'int', nullable: true })
+  // seatGradeId: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -21,7 +21,6 @@ import { PerformerRegisterDto } from 'src/user/dto/performerRegister.dto';
 import { CustomerRegisterDto } from 'src/user/dto/customerRegister.dto';
 import { Performer } from 'src/user/entities/performer.entity';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { Seat } from './types/seat.type';
 import { Admin } from 'src/user/entities/admin.entity';
 import { Concert } from './entities/concert.entities';
 import { ConcertDetailInfo } from './types/concertDetail.type';
@@ -79,6 +78,7 @@ export class ConcertController {
     @Param('id') id: number,
     @Body() modifyData: ConcertDto, //유저가 어떤걸 수정할지 모르니 ConcertDto로 하고, Put메소드 사용.
   ): Promise<Concert> {
+    //
     return await this.concertService.modifyConcert(id, modifyData);
   }
 

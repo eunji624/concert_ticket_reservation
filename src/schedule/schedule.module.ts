@@ -5,9 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Concert } from 'src/concert/entities/concert.entities';
-import { SeatNum } from 'src/seat/entities/seatNum.entities';
-import { SeatGrade } from 'src/seat/entities/seatGrade.entities';
 import { Schedule } from './entities/schedule.entity';
+import { Seat } from 'src/seat/entities/seat.entities';
+import { SeatModule } from 'src/seat/seat.module';
 
 @Module({
   imports: [
@@ -17,10 +17,12 @@ import { Schedule } from './entities/schedule.entity';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Concert, SeatNum, SeatGrade, Schedule]),
+    TypeOrmModule.forFeature([Concert, Schedule, Seat]),
+    SeatModule,
   ],
 
   controllers: [ScheduleController],
   providers: [ScheduleService],
+  exports: [ScheduleService],
 })
 export class ScheduleModule {}

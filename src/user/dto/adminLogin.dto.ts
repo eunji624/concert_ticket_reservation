@@ -1,5 +1,7 @@
 import { AdminRegisterDto } from './adminRegister.dto';
-import { PickType } from '@nestjs/mapped-types';
+// import { PickType } from '@nestjs/mapped-types';
+
+import { PickType } from '@nestjs/swagger';
 
 export class AdminLoginDto extends PickType(AdminRegisterDto, [
   'email',

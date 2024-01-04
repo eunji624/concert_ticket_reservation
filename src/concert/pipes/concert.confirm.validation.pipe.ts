@@ -1,8 +1,14 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
-import { Seat } from '../types/seat.type';
+import { SeatType } from 'src/seat/types/seat.type';
 
 export class ConfirmValidationPipe implements PipeTransform {
-  readonly ConfirmOptions = [Seat.STANDING, Seat.SEAT];
+  readonly ConfirmOptions = [
+    SeatType.STANDING,
+    SeatType.VIP,
+    SeatType.S,
+    SeatType.R,
+    SeatType.A,
+  ];
 
   transform(value: any) {
     console.log('value', value);

@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SeatNum } from './entities/seatNum.entities';
-// import { SeatController } from './seat.controller';
-// import { SeatService } from './seat.service';
-import { SeatGrade } from './entities/seatGrade.entities';
+import { SeatController } from './seat.controller';
+import { SeatService } from './seat.service';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { Seat } from './entities/seat.entities';
+import { Concert } from 'src/concert/entities/concert.entities';
 
 @Module({
   imports: [
@@ -15,9 +16,10 @@ import { SeatGrade } from './entities/seatGrade.entities';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([SeatNum, SeatGrade]),
+    TypeOrmModule.forFeature([Concert, Schedule, Seat]),
   ],
-  // providers: [SeatService],
-  // controllers: [SeatController],
+  providers: [SeatService],
+  controllers: [SeatController],
+  exports: [SeatService],
 })
 export class SeatModule {}

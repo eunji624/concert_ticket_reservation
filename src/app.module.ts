@@ -13,14 +13,13 @@ import { Customer } from './user/entities/customer.entity';
 import { Performer } from './user/entities/performer.entity';
 import { Concert } from './concert/entities/concert.entities';
 import { Admin } from './user/entities/admin.entity';
-import { SeatNum } from './seat/entities/seatNum.entities';
 import { SeatModule } from './seat/seat.module';
-import { SeatGrade } from './seat/entities/seatGrade.entities';
 import { ScheduleModule } from './schedule/schedule.module';
 import { Schedule } from './schedule/entities/schedule.entity';
 import { TicketModule } from './ticket/ticket.module';
 import { Ticket } from './ticket/entities/ticket.entities';
 import { Point } from './ticket/entities/point.entities';
+import { Seat } from './seat/entities/seat.entities';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -38,9 +37,8 @@ const typeOrmModuleOptions = {
       Performer,
       Admin,
       Concert,
-      SeatNum,
-      SeatGrade,
       Schedule,
+      Seat,
       Ticket,
       Point,
     ],

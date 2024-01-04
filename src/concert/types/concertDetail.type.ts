@@ -1,4 +1,4 @@
-import { Seat } from './seat.type';
+import { SeatType } from 'src/seat/types/seat.type';
 
 export type ConcertDetailInfo = {
   performerEmail: string;
@@ -7,7 +7,7 @@ export type ConcertDetailInfo = {
   concertDescription: string;
   reservationStart: string;
   concertHallName: string;
-  seatType: Seat;
-  price: number;
-  date: string[];
+  // seatType: SeatType;
+  // price: number;
+  // date: string[];
 };

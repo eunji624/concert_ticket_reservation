@@ -1,34 +1,40 @@
 import {
+  BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Concert } from './entities/concert.entities';
-import { Like, Repository } from 'typeorm';
+import { DataSource, Like, Repository, getManager } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConcertDto } from './dto/concert.dto';
 import { Admin } from 'src/user/entities/admin.entity';
 import { Performer } from 'src/user/entities/performer.entity';
-import { SeatNum } from '../seat/entities/seatNum.entities';
-import { SeatGrade } from 'src/seat/entities/seatGrade.entities';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { Seat } from 'src/seat/entities/seat.entities';
+import { SeatStatus } from 'src/seat/types/seat.status';
+import { find } from 'lodash';
+import { ScheduleService } from 'src/schedule/schedule.service';
+import { SeatService } from 'src/seat/seat.service';
 import { ConcertDetailInfo } from './types/concertDetail.type';
-// import { ConcertHall } from 'src/seat/entities/concertHall.entities';
 
 @Injectable()
 export class ConcertService {
   constructor(
     @InjectRepository(Concert)
     private concertRepository: Repository<Concert>,
-    @InjectRepository(SeatNum)
-    private seatNumRepository: Repository<SeatNum>,
-    @InjectRepository(SeatGrade)
-    private seatGradeRepository: Repository<SeatGrade>,
     @InjectRepository(Schedule)
     private scheduleRepository: Repository<Schedule>,
+    @InjectRepository(Seat)
+    private seatRepository: Repository<Seat>,
+    @Inject(ScheduleService)
+    private readonly scheduleService: ScheduleService,
+    private readonly seatService: SeatService,
     private readonly jwtService: JwtService,
+    private dataSource: DataSource,
   ) {}
 
   //공연 리스트 보기
@@ -57,18 +63,14 @@ export class ConcertService {
   //공연 상세 보기
   async concertDetail(id: number): Promise<ConcertDetailInfo> {
     const concertDetail = await this.concertRepository.findOne({
-      // select: { schedule: true },
       where: { confirm: true, id },
+      select: { schedule: true },
     });
+    console.log('concertDetail', concertDetail);
     if (!concertDetail) {
       throw new NotFoundException('존재하지 않는 공연입니다.');
     }
-    const findConcertAllSchedule = await this.scheduleRepository.find({
-      where: { concertId: id },
-    });
-    console.log('concertDetail', concertDetail);
-    console.log('findConcertAllSchedule', findConcertAllSchedule);
-    const dateArr = findConcertAllSchedule.map((e) => e.date);
+    const newSchedule = concertDetail.schedule.map((e) => e.date);
     const concertDetailInfo = {
       performerEmail: concertDetail.performerEmail,
       concertName: concertDetail.concertName,
@@ -76,16 +78,17 @@ export class ConcertService {
       concertDescription: concertDetail.concertDescription,
       reservationStart: concertDetail.reservationStart,
       concertHallName: concertDetail.concertHallName,
-      seatType: concertDetail.seatType,
-      price: concertDetail.price,
-      date: dateArr,
+      date: newSchedule,
     };
     return concertDetailInfo;
   }
 
   //공연 생성하기
   async createConcert(concertDto, user): Promise<Concert> {
-    //: Promise<Concert>
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     const {
       confirm,
       performerEmail,
@@ -95,24 +98,24 @@ export class ConcertService {
       reservationStart,
       concertHallName,
       priceByGrade,
-      price,
-      seatType,
-      date,
-      totalSeat,
+      performanceDate,
     } = concertDto;
 
     try {
       //콘서트 테이블에 이미 동일한 이름이 존재한다면 오류.
-      const isAlreadyExist = await this.concertRepository.findOne({
-        where: { concertName },
-      });
+      const isAlreadyExist = await queryRunner.manager
+        .getRepository(Concert)
+        .findOne({
+          where: { concertName },
+        });
       if (isAlreadyExist) {
         throw new ConflictException('이미 존재하는 공연명 입니다.');
       }
-      if (seatType === 'STANDING') {
-        let scheduleArr = [];
-        //concert 테이블에 데이터 넣기
-        const saveConcert = await this.concertRepository.save({
+
+      //concert 테이블에 데이터 넣기
+      const saveConcert = await queryRunner.manager
+        .getRepository(Concert)
+        .save({
           confirm,
           performerEmail,
           concertName,
@@ -120,99 +123,38 @@ export class ConcertService {
           concertDescription,
           reservationStart,
           concertHallName,
-          seatType,
-          price,
-          // scheduleId: scheduleIdArr,
         });
+      console.log('saveConcert', saveConcert);
 
-        for (let eachDate of date) {
-          //schedule 테이블에 데이터 넣기
-          const scheduleData = await this.scheduleRepository.save({
-            date: eachDate,
-            concert: saveConcert, // 콘서트와의 연결 추가
-            totalSeat,
-          });
+      let seatsToInsert = [];
+      //스케줄 테이블 데이터 넣기.
+      const scheduleData = await this.scheduleService.createSchedule(
+        performanceDate,
+        saveConcert,
+      );
 
-          // scheduleArr.push(scheduleData);
+      //scheduleData 결과를 기반으로 시트 테이블 데이터 넣기
+      Promise.all(scheduleData).then(async (schedule) => {
+        console.log(schedule);
+        // throw new Error('테스트');
+        const createSeat = await this.seatService.createSeat(
+          schedule,
+          saveConcert.id,
+          priceByGrade,
+        );
+        console.log('createSeat', createSeat);
+      });
+      // .catch(async (err) => await queryRunner.rollbackTransaction());
 
-          //아이디값 추가.
-          await this.concertRepository.save({
-            scheduleId: scheduleData.id,
-            ...saveConcert,
-          });
-        }
+      await queryRunner.commitTransaction();
+      if (seatsToInsert.length && saveConcert) {
         return saveConcert;
-      } else {
-        throw new NotAcceptableException('아직 준비되지 않은 서비스입니다.');
       }
-
-      // //schedule, seatGrade, seatNum 테이블에 데이터 넣기
-      // let seatGradeArr = [];
-      // for (let eachPriceByGrade of priceByGrade) {
-      //   //seatGrade 테이블에 데이터 넣기.
-      //   const seatGrade = await this.seatGradeRepository.save({
-      //     price: eachPriceByGrade.price,
-      //     grade: eachPriceByGrade.grade,
-      //   });
-      //   seatGradeArr.push(seatGrade.id);
-      //   //아이디값 추가
-
-      //   await this.scheduleRepository.save({
-      //     seatGradeId: seatGrade.id,
-      //   });
-
-      //   //seatNum 테이블에 데이터 넣기
-      //   for (let i = 0; i < eachPriceByGrade.seat; i++) {
-      //     await this.seatNumRepository.save({
-      //       seatNum: i + 1,
-      //       seatGrade: seatGrade,
-      //     });
-      //   }
-      // }
-      // console.log('seatGradeArr', seatGradeArr); //seatGradeArr [ 127, 128, 129 ]
-
-      // // seatNum 테이블에 해당 콘서트 홀 아이디 값이 없다면 등록 안된 공연장!
-      // const isExistConcertHall = await this.seatNumRepository.find({
-      //   where: { concertHallId },
-      // });
-      // if (!isExistConcertHall) {
-      //   throw new ConflictException('등록되지 않은 공연장입니다.');
-      // }
-
-      // const seatGradeArr = await this.seatGradeRepository.find({
-      //   where: { concertHallId },
-      // });
-      // console.log('seatGradeArr', seatGradeArr);
-      // const newArrSeatNum = isExistConcertHall.map((seatNum) => {
-      //   for (let seatGrade of seatGradeArr) {
-      //     if (seatNum.seatGradeId === seatGrade.id) {
-      //       return { seatGradeId: seatGrade.grade, seatNum: seatNum.seatNum };
-      //     }
-      //   }
-      // });
-
-      // console.log('newArrSeatNum', typeof newArrSeatNum); //object
-      // const jsonNewArrSeatNum = JSON.stringify(newArrSeatNum);
-      // console.log('jsonNewArrSeatNum', typeof jsonNewArrSeatNum); //string
-
-      // //req객체에 담긴 유저 emailId을 테이블에 넣어주기.
-      // concertDto.performerEmail = user.email;
-      // const createConcert = await this.concertRepository.save({
-      //   ...newConcertDto,
-      //   performerEmail: user.email,
-      //   // availableSeat: jsonNewArrSeatNum,
-      //   concertHallId: concertHallId, // concertHallId를 명시적으로 설정해야 함
-      // });
-
-      // // concertDto.performerEmail = user.email;
-      // // const createConcert = await this.concertRepository.save({
-      // //   ...concertDto,
-      // //   availableSeat: newArrSeatNum,
-      // //   concertHallId: concertHallId, // concertHallId를 명시적으로 설정해야 함
-      // // });
-      // return createConcert;
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -232,21 +174,163 @@ export class ConcertService {
 
   //공연 수정하기
   async modifyConcert(id: number, modifyData: ConcertDto): Promise<Concert> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    const {
+      confirm,
+      performerEmail,
+      concertName,
+      concertImage,
+      concertDescription,
+      reservationStart,
+      concertHallName,
+      priceByGrade,
+      performanceDate,
+    } = modifyData;
     try {
+      //접근 확인
       const isExistConcert = await this.concertRepository.findOneBy({ id });
       if (!isExistConcert) {
         throw new NotFoundException(
           '해당하는 공연 게시글이 존재하지 않습니다.',
         );
       }
+      //시트, 스케줄 데이터 찾기
+      const findSeatData = await this.seatService.findSeatOfConcert(id);
+      const findScheduleData =
+        await this.scheduleService.findScheduleOfConcertId(id);
+
+      if (!findScheduleData && !findSeatData) {
+        throw new NotFoundException(
+          '해당하는 공연 게시글이 존재하지 않습니다.',
+        );
+      }
+      console.log('findSeatData', findSeatData);
+      const oldSeatTypeArr = findSeatData.map((eachSeat) => eachSeat.seatType);
+      const setOldSeatTypeArr = [...new Set(oldSeatTypeArr)].sort();
+
+      const newSeatTypeArr = priceByGrade
+        .map((eachSeat) => eachSeat.grade)
+        .sort();
+
+      const newSeatCount = priceByGrade.reduce(
+        (acc, cur) => acc + cur.seatCount,
+        0,
+      );
+
+      if (findSeatData.length / findScheduleData.length !== newSeatCount) {
+        console.log('여기서 문제==> ', 1);
+        throw new BadRequestException(
+          '시트의 타입과 좌석수는 바꿀 수 없습니다.',
+        );
+      }
+
+      for (let i = 0; i < setOldSeatTypeArr.length; i++) {
+        if (setOldSeatTypeArr[i] !== newSeatTypeArr[i]) {
+          console.log('여기서 문제==> ', 2);
+
+          throw new BadRequestException(
+            '시트의 타입과 좌석수는 바꿀 수 없습니다.',
+          );
+        }
+      }
+
       //수정하면 다시 관리자 컨펌 받도록 false
-      modifyData.confirm = false;
-      const modifyConcert = await this.concertRepository.save({
-        ...modifyData,
+      isExistConcert.confirm = false;
+      isExistConcert.performerEmail = performerEmail;
+      isExistConcert.concertName = concertName;
+      isExistConcert.concertImage = concertImage;
+      isExistConcert.concertDescription = concertDescription;
+      isExistConcert.reservationStart = reservationStart;
+      isExistConcert.concertHallName = concertHallName;
+
+      //concert 테이블에 데이터 업데이트
+      const updateConcert = await queryRunner.manager
+        .getRepository(Concert)
+        .save(isExistConcert);
+      console.log('updateConcert', updateConcert);
+
+      //시트 데이터 수정하기 전에 등급별 가격 미리 빼두기
+      let grade = [];
+      for (let eachPriceByGrade of priceByGrade) {
+        grade.push(eachPriceByGrade.grade);
+        grade.push(eachPriceByGrade.price);
+      }
+      console.log('grade', grade); //[ 'VIP', 50000, 'S', 45000, 'A', 25000 ]
+
+      //date 변경된 경우의 수
+      const findOldDate = findScheduleData.map((e) => e.date).sort();
+      const modifyNewDate = performanceDate.sort();
+
+      let sameDate = [];
+      let cancelDate = [];
+      let createDate = [];
+
+      //날짜 동일한애, 다른애 분별하기
+      for (let [i, oldDate] of findOldDate.entries()) {
+        const sameD = modifyNewDate.find((newDate) => newDate === oldDate);
+        if (sameD) sameDate.push(sameD);
+        else cancelDate.push(oldDate);
+      }
+      for (let [i, newDate] of modifyNewDate.entries()) {
+        const sameD = findOldDate.find((oldDate) => newDate === oldDate);
+        if (!sameD) createDate.push(newDate);
+      }
+      console.log('sameDate', sameDate);
+      console.log('createDate', createDate);
+      console.log('cancelDate', cancelDate);
+
+      //분류한 대로 데이터 처리하기
+
+      //날짜가 추가된 경우(스케줄, 시트)
+      const addScheduleArr = await this.scheduleService.createSchedule(
+        createDate,
+        updateConcert,
+      );
+      console.log('addScheduleArr', addScheduleArr);
+      Promise.all(addScheduleArr).then(async (schedule) => {
+        console.log('프로미스안 schedule', schedule);
+
+        const createSeat = await this.seatService.createSeat(
+          schedule,
+          id,
+          priceByGrade,
+        );
+        console.log('createSeat', createSeat);
       });
-      return modifyConcert;
+
+      //날짜가 삭제된 경우(스케줄, 시트)
+      const deleteScheduleArr = await this.scheduleService.deleteSchedule(
+        cancelDate,
+        id,
+      );
+      console.log('deleteScheduleArr', deleteScheduleArr);
+      const deleteSeat = await this.seatService.deleteSeat(deleteScheduleArr);
+      console.log('deleteSeat', deleteSeat);
+
+      //날짜가 같은 경우(스케줄, 시트)__ 만약 시간이 다른 경우라면? 추가 삭제로 예상중
+      console.log('_+_');
+      const sameScheduleArr =
+        await this.scheduleService.findScheduleGetScheduleId(sameDate, id);
+      console.log('sameScheduleArr', sameScheduleArr);
+      //시트는 가격만 변경 가능
+      const modifySeat = await this.seatService.updateSeat(
+        id,
+        sameScheduleArr,
+        priceByGrade,
+      );
+      console.log('modifySeat', modifySeat);
+
+      await queryRunner.commitTransaction();
+      if (updateConcert) {
+        return updateConcert;
+      }
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
   }
 
