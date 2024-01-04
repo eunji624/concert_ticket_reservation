@@ -252,7 +252,7 @@ export class UserService {
       email: customerInfo.email,
       name: customerInfo.name,
       birth: customerInfo.birth,
-      point: sortPoint[0].currentPoint,
+      current_point: sortPoint[0].currentPoint,
     };
     console.log('customerInfoData', customerInfoData);
 
