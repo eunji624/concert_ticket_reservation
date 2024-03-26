@@ -17,7 +17,7 @@ ADMIN_SECRET_KEY =</br>
 
 ## API 명세
 
-https://www.notion.so/1e0bf00468794339bb745741092ebadf?v=55a52c82ab4843bd8e000b06a0ebf62e&pvs=4
+https://amethyst-tenor-ff2.notion.site/1e0bf00468794339bb745741092ebadf?v=55a52c82ab4843bd8e000b06a0ebf62e
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
